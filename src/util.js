@@ -29,7 +29,7 @@ export function getRandomNumber (minValue, maxValue) {
   return Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue;
 }
 
-// Получение рандоиного числа с плавающей точкой
+// Получение рандомного числа с плавающей точкой
 
 export function getRandomValue (minValue, maxValue, range) {
   if (minValue <= 0) {

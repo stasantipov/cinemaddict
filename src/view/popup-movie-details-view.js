@@ -1,13 +1,58 @@
 import {createElement} from '../render.js';
 import {humanizeFilmDueDate} from '../util.js';
-import {createMockComment} from '../mock/create-mock-comment';
+
+const comments = [
+  {
+    id: '42',
+    author: 'Ilya OReilly',
+    comment: 'gooood',
+    dateComment: '2019-05-10',
+    emotion: 'smile'
+  },
+  {
+    id: '2',
+    author: 'Ilya OReilly',
+    comment: 'norm',
+    dateComment: '2019-05-11',
+    emotion: 'sleeping'
+  },
+  {
+    id: '4',
+    author: 'Ilya OReilly',
+    comment: 'fooooooooooooooooo',
+    dateComment: '2019-05-09',
+    emotion: 'angry'
+  }
+];
+
+const createNewCommentTemplate = ({author, comment, dateComment, emotion}) => (
+  `<li class="film-details__comment">
+    <span class="film-details__comment-emoji">
+      <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
+    </span>
+    <div>
+      <p class="film-details__comment-text">${comment}</p>
+      <p class="film-details__comment-info">
+        <span class="film-details__comment-author">${author}</span>
+        <span class="film-details__comment-day">${dateComment}</span>
+        <button class="film-details__comment-delete">Delete</button>
+      </p>
+    </div>
+  </li>`
+);
+
+const renderComments = (list) => {
+  let commentTepmlate = '';
+  for (const comment of list) {
+    commentTepmlate = commentTepmlate + createNewCommentTemplate(comment);
+  }
+  return commentTepmlate;
+};
 
 
 const createNewFilmDetailsTemplate = (movie) => {
   const {title, alternativeTitle, genre, director, description, totalRating, poster, runtime, age, writers, actors} = movie.filmInfo;
   const {releaseCountry, date} = movie.filmInfo.release;
-
-  const {author, comment, dateComment, emotion} = createMockComment();
 
   return (
     `<section class="film-details">
@@ -83,58 +128,7 @@ const createNewFilmDetailsTemplate = (movie) => {
             <h3 class="film-details__comments-title">Comments <span class="film-details__comments-count">4</span></h3>
 
             <ul class="film-details__comments-list">
-              <li class="film-details__comment">
-                <span class="film-details__comment-emoji">
-                  <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
-                </span>
-                <div>
-                  <p class="film-details__comment-text">${comment}</p>
-                  <p class="film-details__comment-info">
-                    <span class="film-details__comment-author">${author}</span>
-                    <span class="film-details__comment-day">${dateComment}</span>
-                    <button class="film-details__comment-delete">Delete</button>
-                  </p>
-                </div>
-              </li>
-              <li class="film-details__comment">
-                <span class="film-details__comment-emoji">
-                  <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-sleeping">
-                </span>
-                <div>
-                  <p class="film-details__comment-text">${comment}</p>
-                  <p class="film-details__comment-info">
-                    <span class="film-details__comment-author">${author}</span>
-                    <span class="film-details__comment-day">${dateComment}</span>
-                    <button class="film-details__comment-delete">Delete</button>
-                  </p>
-                </div>
-              </li>
-              <li class="film-details__comment">
-                <span class="film-details__comment-emoji">
-                  <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-puke">
-                </span>
-                <div>
-                  <p class="film-details__comment-text">${comment}</p>
-                  <p class="film-details__comment-info">
-                    <span class="film-details__comment-author">${author}</span>
-                    <span class="film-details__comment-day">${dateComment}</span>
-                    <button class="film-details__comment-delete">Delete</button>
-                  </p>
-                </div>
-              </li>
-              <li class="film-details__comment">
-                <span class="film-details__comment-emoji">
-                  <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-angry">
-                </span>
-                <div>
-                  <p class="film-details__comment-text">${comment}</p>
-                  <p class="film-details__comment-info">
-                    <span class="film-details__comment-author">${author}</span>
-                    <span class="film-details__comment-day">${dateComment}</span>
-                    <button class="film-details__comment-delete">Delete</button>
-                  </p>
-                </div>
-              </li>
+            ${renderComments(comments)}
             </ul>
 
             <div class="film-details__new-comment">
@@ -175,23 +169,26 @@ const createNewFilmDetailsTemplate = (movie) => {
 
 
 export default class PopupView {
+  #element = null;
+  #movie = null;
+
   constructor(movie) {
-    this.movie = movie;
+    this.#movie = movie;
   }
 
-  getTemplate() {
-    return createNewFilmDetailsTemplate(this.movie);
+  get template() {
+    return createNewFilmDetailsTemplate(this.#movie);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element) {
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }
