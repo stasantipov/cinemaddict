@@ -11,11 +11,11 @@ const siteMainNode = document.querySelector('.main');
 const siteFooterNode = document.querySelector('.footer__statistics');
 
 const movieModel = new MovieModel();
-const contentPresenter = new ContentPresenter();
+const contentPresenter = new ContentPresenter(movieModel);
 
 render(new UserNameView(), siteHeaderNode);
 render(new NavigationView(), siteMainNode);
 render(new FilterView(), siteMainNode);
 render(new StatisticsView(), siteFooterNode);
 
-contentPresenter.init(movieModel);
+contentPresenter.init();
