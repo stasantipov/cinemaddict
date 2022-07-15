@@ -1,6 +1,19 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 
 // Создание одной карточки фильма
+
+const FILM_CARD = {
+  filmInfo: {
+    title: '',
+    totalRating: 0,
+    poster: '',
+    ageRating: 1888,
+    age: 0,
+    runtime: 0,
+    genre: '',
+    description: ''
+  }
+};
 
 const createFilmCard = (movie) => {
   const {title, genre, description, ageRating, totalRating, poster, runtime} = movie.filmInfo;
@@ -28,11 +41,11 @@ const createFilmCard = (movie) => {
   );
 };
 
-export default class MovieCardView {
-  #element = null;
+export default class MovieCardView extends AbstractView {
   #movie = null;
 
-  constructor(movie) {
+  constructor(movie = FILM_CARD) {
+    super();
     this.#movie = movie;
   }
 
@@ -40,15 +53,13 @@ export default class MovieCardView {
     return createFilmCard(this.#movie);
   }
 
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
+  setFilmClickHandler = (callback) => {
+    this._callback.click = callback;
+    this.element.addEventListener('click', this.#clickHandler);
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #clickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.click();
+  };
 }

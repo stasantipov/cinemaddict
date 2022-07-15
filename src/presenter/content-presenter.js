@@ -1,3 +1,4 @@
+import {render} from '../framework/render';
 import MovieListView from '../view/movie-list-view';
 import MovieCardView from '../view/film-card-view';
 import ButtonShowMoreView from '../view/button-show-more-view';
@@ -5,7 +6,6 @@ import TopFilmsView from '../view/top-films-list-view';
 import MostCommentedFilmsView from '../view/most-commented-films-view';
 import PopupView from '../view/popup-movie-details-view';
 import NoFilmView from '../view/no-film-view';
-import {render} from '../render';
 
 const siteBodyNode = document.querySelector('body');
 const siteMainNode = document.querySelector('.main');
@@ -31,8 +31,7 @@ export default class ContentPresenter {
     this.#renderBoard();
   };
 
-  #handleShowMoreButtonClick = (evt) => {
-    evt.preventDefault();
+  #handleShowMoreButtonClick = () => {
     this.#movies
       .slice(this.#renderedFilmCount, this.#renderedFilmCount + FILM_COUNT_PER_STEP)
       .forEach((movie) => this.#renderMovie(movie));
@@ -73,7 +72,7 @@ export default class ContentPresenter {
 
     };
 
-    movieComponent.element.querySelector('.film-card__link').addEventListener('click', () => {
+    movieComponent.setFilmClickHandler(() => {
       appendPopupToBody();
       document.addEventListener('keydown', onEscKeyDown);
     });
@@ -96,7 +95,7 @@ export default class ContentPresenter {
       if(this.#movies.length > FILM_COUNT_PER_STEP) {
         render(this.#showMoreButtonComponent, getFilmList());
 
-        this.#showMoreButtonComponent.element.addEventListener('click', this.#handleShowMoreButtonClick);
+        this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
       }
 
       // Добавит популярные фильмы

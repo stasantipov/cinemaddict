@@ -1,8 +1,8 @@
-import FilterView from './view/list-filter-view.js';
-import UserNameView from './view/user-name-view.js';
+import {render} from './framework/render';
+import FilterView from './view/list-filter-view';
+import UserNameView from './view/user-name-view';
 import NavigationView from './view/navigation-view';
 import StatisticsView from './view/statistics-view';
-import {render} from './render.js';
 import ContentPresenter from './presenter/content-presenter';
 import MovieModel from './model/movie-model.js';
 

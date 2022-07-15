@@ -1,4 +1,4 @@
-import {createElement} from '../render.js';
+import AbstractView from '../framework/view/abstract-view.js';
 import {humanizeFilmDueDate} from '../util.js';
 
 const comments = [
@@ -24,6 +24,28 @@ const comments = [
     emotion: 'angry'
   }
 ];
+
+const FILM_CARD = {
+  filmInfo: {
+    title: '',
+    alternativeTitle: '',
+    totalRating: 0,
+    poster: '',
+    ageRating: 0,
+    director: '',
+    writers: '',
+    actors: '',
+    age: 0,
+
+    release: {
+      date: '',
+      releaseCountry: ''
+    },
+    runtime: 0,
+    genre: '',
+    description: ''
+  }
+};
 
 const createNewCommentTemplate = ({author, comment, dateComment, emotion}) => (
   `<li class="film-details__comment">
@@ -168,27 +190,15 @@ const createNewFilmDetailsTemplate = (movie) => {
 };
 
 
-export default class PopupView {
-  #element = null;
+export default class PopupView extends AbstractView {
   #movie = null;
 
-  constructor(movie) {
+  constructor(movie = FILM_CARD) {
+    super();
     this.#movie = movie;
   }
 
   get template() {
     return createNewFilmDetailsTemplate(this.#movie);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
   }
 }

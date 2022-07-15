@@ -1,6 +1,4 @@
-import {createElement} from '../render.js';
-
-// Добавление фильма в список
+import AbstractView from '../framework/view/abstract-view.js';
 
 const createNewMovieListTemplate = () => (
   `<section class="films">
@@ -14,27 +12,8 @@ const createNewMovieListTemplate = () => (
   </section>`
 );
 
-export default class MovieListView {
-  #element = null;
-  #movie = [];
-
-  constructor(movie) {
-    this.#movie = movie;
-  }
-
+export default class MovieListView extends AbstractView {
   get template() {
-    return createNewMovieListTemplate(this.#movie);
-  }
-
-  get element() {
-    if (!this.#element) {
-      this.#element = createElement(this.template);
-    }
-
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
+    return createNewMovieListTemplate();
   }
 }
