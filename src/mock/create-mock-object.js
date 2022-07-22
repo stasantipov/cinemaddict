@@ -21,7 +21,14 @@ export const createMockObject = () => ({
     },
     runtime: getTimeFromMins(runtime),
     genre: getRandomItem(genre),
-    description: getRandomItem(description)
+    description: getRandomItem(description),
+
+    userDetails: {
+      watchlist: true,
+      alreadyWatched: true,
+      watchingDate: '2019-04-12T16:12:32.554Z',
+      favorite: false
+    }
   }
 });
 
