@@ -1,5 +1,4 @@
 import {render} from './framework/render';
-import FilterView from './view/list-filter-view';
 import UserNameView from './view/user-name-view';
 import NavigationView from './view/navigation-view';
 import StatisticsView from './view/statistics-view';
@@ -18,7 +17,6 @@ const filters = generateFilter(movieModel.movies);
 
 render(new UserNameView(), siteHeaderNode);
 render(new NavigationView(filters), siteMainNode);
-render(new FilterView(), siteMainNode);
 render(new StatisticsView(), siteFooterNode);
 
 contentPresenter.init();

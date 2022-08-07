@@ -75,9 +75,23 @@ const renderComments = (list) => {
 const createNewFilmDetailsTemplate = (movie) => {
   const {title, alternativeTitle, genre, director, description, totalRating, poster, runtime, age, writers, actors} = movie.filmInfo;
   const {releaseCountry, date} = movie.filmInfo.release;
+  const {watchlist, alreadyWatched, favorite} = movie.filmInfo.userDetails;
+
+  const watchlistClassName = watchlist
+    ? 'film-details__control-button--watchlist film-details__control-button--active'
+    : 'film-details__control-button--watchlist';
+
+  const watchedClassName = alreadyWatched
+    ? 'film-details__control-button--watched film-details__control-button--active'
+    : 'film-details__control-button--watched';
+
+  const favoriteClassName = favorite
+    ? 'film-details__control-button--favorite film-details__control-button--active'
+    : 'film-details__control-button--favorite';
 
   return (
     `<section class="film-details">
+      <div class="films-details__shadow"></div>
       <form class="film-details__inner" action="" method="get">
         <div class="film-details__top-container">
           <div class="film-details__close">
@@ -139,9 +153,9 @@ const createNewFilmDetailsTemplate = (movie) => {
           </div>
 
           <section class="film-details__controls">
-            <button type="button" class="film-details__control-button film-details__control-button--watchlist" id="watchlist" name="watchlist">Add to watchlist</button>
-            <button type="button" class="film-details__control-button film-details__control-button--active film-details__control-button--watched" id="watched" name="watched">Already watched</button>
-            <button type="button" class="film-details__control-button film-details__control-button--favorite" id="favorite" name="favorite">Add to favorites</button>
+            <button type="button" class="film-details__control-button ${watchlistClassName}" id="watchlist" name="watchlist">Add to watchlist</button>
+            <button type="button" class="film-details__control-button ${watchedClassName}" id="watched" name="watched">Already watched</button>
+            <button type="button" class="film-details__control-button ${favoriteClassName}" name="favorite">Add to favorites</button>
           </section>
         </div>
 

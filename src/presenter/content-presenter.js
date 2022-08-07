@@ -1,13 +1,15 @@
-import {render} from '../framework/render';
+import {render, remove} from '../framework/render';
+import SortView from '../view/list-sort-view';
 import MovieListView from '../view/movie-list-view';
 import MovieCardView from '../view/film-card-view';
 import ButtonShowMoreView from '../view/button-show-more-view';
 import TopFilmsView from '../view/top-films-list-view';
 import MostCommentedFilmsView from '../view/most-commented-films-view';
-import PopupView from '../view/popup-movie-details-view';
 import NoFilmView from '../view/no-film-view';
+import FilmPresenter from './film-presenter';
+import {updateItem} from '../util';
+import {SortType} from '../view/list-sort-view';
 
-const siteBodyNode = document.querySelector('body');
 const siteMainNode = document.querySelector('.main');
 const getFilmSection = () => siteMainNode.querySelector('.films');
 const getFilmList = () => getFilmSection().querySelector('.films-list');
@@ -20,7 +22,11 @@ export default class ContentPresenter {
   #movieModel = null;
   #movies = [];
   #showMoreButtonComponent = new ButtonShowMoreView();
+  #currentSortType = SortType.DEFAULT;
+  #sortComponent = new SortView(this.#currentSortType);
   #renderedFilmCount = FILM_COUNT_PER_STEP;
+  #filmPresenter = new Map();
+  #sourcedBoardTasks = [];
 
   constructor(movieModel) {
     this.#movieModel = movieModel;
@@ -28,6 +34,8 @@ export default class ContentPresenter {
 
   init = () => {
     this.#movies = [...this.#movieModel.movies];
+    this.#sourcedBoardTasks = [...this.#movieModel.movies];
+    this.#renderSort();
     this.#renderBoard();
   };
 
@@ -44,40 +52,58 @@ export default class ContentPresenter {
     }
   };
 
+  #handleModeChange = () => {
+    this.#filmPresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #handleFilmChange = (updatedFilm) => {
+    this.#movies = updateItem(this.#movies, updatedFilm);
+    this.#sourcedBoardTasks = updateItem(this.#sourcedBoardTasks, updatedFilm);
+    this.#filmPresenter.get(updatedFilm.id).init(updatedFilm);
+  };
+
+  #sortFilms = (sortType) => {
+    switch (sortType) {
+      case SortType.SORT_BY_RATING:
+        this.#movies.sort((a, b) => b.filmInfo.totalRating - a.filmInfo.totalRating);
+        break;
+      case SortType.SORT_BY_DATE:
+        this.#movies.sort((a, b) => a.filmInfo.totalRating - b.filmInfo.totalRating);
+        break;
+      default:
+        this.#movies = [...this.#sourcedBoardTasks];
+    }
+
+    this.#currentSortType = sortType;
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+
+    this.#sortFilms(sortType);
+    this.#clearFilmList();
+    this.#renderBoard();
+
+  };
+
+  #renderSort = () => {
+    render(this.#sortComponent, siteMainNode);
+    this.#sortComponent.setSortTypeChangeHandler(this.#handleSortTypeChange);
+  };
+
   #renderMovie = (movie) => {
-    const movieComponent = new MovieCardView(movie);
-    const popupComponent = new PopupView(movie);
+    const filmPresenter = new FilmPresenter(getFilmCard(), this.#handleFilmChange, this.#handleModeChange);
+    filmPresenter.init(movie);
+    this.#filmPresenter.set(movie.id, filmPresenter);
+  };
 
-    // TODO: убрать утечку памяти при нажатии на Esc - удалять обработчик события клика на кнопку закрытия.
-    const onEscKeyDown = (evt) => {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        siteBodyNode.removeChild(popupComponent.element);
-        document.removeEventListener('keydown', onEscKeyDown);
-      }
-    };
-
-    const appendPopupToBody = () => {
-      render(popupComponent, siteBodyNode);
-
-      const closeButton = popupComponent.element.querySelector('.film-details__close-btn');
-
-      function closePopup () {
-        closeButton.removeEventListener('click', closePopup);
-        document.removeEventListener('keydown', onEscKeyDown);
-        siteBodyNode.removeChild(popupComponent.element);
-      }
-
-      closeButton.addEventListener('click', closePopup);
-
-    };
-
-    movieComponent.setFilmClickHandler(() => {
-      appendPopupToBody();
-      document.addEventListener('keydown', onEscKeyDown);
-    });
-
-    render(movieComponent, getFilmCard());
+  #clearFilmList = () => {
+    this.#filmPresenter.forEach((presenter) => presenter.destroy());
+    this.#filmPresenter.clear();
+    this.#renderedFilmCount = FILM_COUNT_PER_STEP;
+    remove(this.#showMoreButtonComponent);
   };
 
   #renderBoard = () => {

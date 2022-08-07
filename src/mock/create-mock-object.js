@@ -1,9 +1,11 @@
 import {title, alternativeTitle, director, writers, actors, releaseCountry, genre, description, poster, runtime, ageRating} from './data.js';
-import {getRandomItem, getRandomNumber, getRandomValue, getTimeFromMins, getRandomArray} from '../util.js';
+import {getRandomItem, getRandomNumber, getRandomValue, getTimeFromMins, getRandomArray, randomBoolean} from '../util.js';
+import {nanoid} from 'nanoid';
 
 // Создание объекта с информацией о фильме
 
 export const createMockObject = () => ({
+  id: nanoid(),
   filmInfo: {
     title: getRandomItem(title),
     alternativeTitle: getRandomItem(alternativeTitle),
@@ -24,10 +26,10 @@ export const createMockObject = () => ({
     description: getRandomItem(description),
 
     userDetails: {
-      watchlist: true,
-      alreadyWatched: true,
+      watchlist: randomBoolean(),
+      alreadyWatched: randomBoolean(),
       watchingDate: '2019-04-12T16:12:32.554Z',
-      favorite: false
+      favorite: randomBoolean()
     }
   }
 });
