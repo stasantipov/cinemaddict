@@ -1,44 +1,23 @@
-import {render, replace, remove} from '../framework/render';
+import {render, replace} from '../framework/render';
 import MovieCardView from '../view/film-card-view';
-import PopupView from '../view/popup-movie-details-view';
 
-const siteBodyNode = document.querySelector('body');
-
-const Mode = {
-  DEFAULT: 'CARD',
-  EDITING: 'POPUP',
-};
-
+// import {humanizeFilmDueDate} from '../util.js';
+// import {nanoid} from 'nanoid';
+// import { dateComment} from '../mock/data';
 
 export default class FilmPresenter {
   #filmListContainer = null;
   #changeData = null;
-  #changeMode = null;
+  #openModal = null;
 
   #movieComponent = null;
-  #popupComponent = null;
 
   #movie = null;
-  #mode = Mode.DEFAULT;
 
-  constructor(filmListContainer, changeData, changeMode) {
-    this.#filmListContainer = filmListContainer;
-    this.#changeData = changeData;
-    this.#changeMode = changeMode;
-
-    this.cleanUp = () => {
-      const root = this.#popupComponent.element;
-      const onEscKeyDown = this.#onEscKeyDown;
-      const closeButton = root.querySelector('.film-details__close-btn');
-      const closeOverlayNode = root.querySelector('.films-details__shadow');
-
-      closeButton.removeEventListener('click', this.cleanUp);
-      closeOverlayNode.removeEventListener('click', this.cleanUp);
-      document.removeEventListener('keydown', onEscKeyDown);
-      siteBodyNode.removeChild(root);
-      document.body.classList.remove('hide-overflow');
-      this.#mode = Mode.DEFAULT;
-    };
+  constructor({rootNode, onChange, openModal}) {
+    this.#filmListContainer = rootNode;
+    this.#changeData = onChange;
+    this.#openModal = openModal;
   }
 
   init = (movie) => {
@@ -47,11 +26,9 @@ export default class FilmPresenter {
     const prevFilmComponent = this.#movieComponent;
 
     this.#movieComponent = new MovieCardView(movie);
-    this.#popupComponent = new PopupView(movie);
 
     this.#movieComponent.setFilmClickHandler(() => {
-      this.#appendPopupToBody();
-      document.addEventListener('keydown', this.#onEscKeyDown);
+      this.#openModal(this.#movie);
     });
 
     this.#movieComponent.setWatchlistClickHandler(this.#handleWatchListClick);
@@ -62,45 +39,8 @@ export default class FilmPresenter {
     if (prevFilmComponent === null) {
       render(this.#movieComponent, this.#filmListContainer);
     } else {
-      if(this.#mode === Mode.DEFAULT)  {
-        replace(this.#movieComponent, prevFilmComponent);
-      }
+      replace(this.#movieComponent, prevFilmComponent);
     }
-  };
-
-  destroy = () => {
-    remove(this.#movieComponent);
-    remove(this.#popupComponent);
-  };
-
-  resetView = () => {
-    if (this.#mode !== Mode.DEFAULT) {
-      this.#appendPopupToBody();
-    }
-  };
-
-  #onEscKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
-      siteBodyNode.removeChild(this.#popupComponent.element);
-      document.removeEventListener('keydown', this.#onEscKeyDown);
-      document.body.classList.remove('hide-overflow');
-    }
-  };
-
-  #appendPopupToBody = () => {
-    render(this.#popupComponent, siteBodyNode);
-    document.body.classList.add('hide-overflow');
-
-    const root = this.#popupComponent.element;
-    const closeButtonNode = root.querySelector('.film-details__close-btn');
-    const closeOverlayNode = root.querySelector('.films-details__shadow');
-
-    closeButtonNode.addEventListener('click', this.cleanUp);
-    closeOverlayNode.addEventListener('click', this.cleanUp);
-
-    this.#changeMode();
-    this.#mode = Mode.EDITING;
   };
 
   #handleWatchListClick = () => {

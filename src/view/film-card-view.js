@@ -44,7 +44,7 @@ const createFilmCard = (movie) => {
         </p>
         <img src="./images/posters/${poster}" alt="" class="film-card__poster">
         <p class="film-card__description">${description}</p>
-        <span class="film-card__comments">5 comments</span>
+        <span class="film-card__comments">${movie.comments.length} comments</span>
       </a>
       <div class="film-card__controls">
         <button class="film-card__controls-item ${watchlistClassName}" type="button">Add to watchlist</button>
@@ -106,6 +106,4 @@ export default class MovieCardView extends AbstractView {
     evt.preventDefault();
     this._callback.favoriteClick();
   };
-
-
 }

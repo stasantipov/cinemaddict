@@ -7,6 +7,7 @@ import TopFilmsView from '../view/top-films-list-view';
 import MostCommentedFilmsView from '../view/most-commented-films-view';
 import NoFilmView from '../view/no-film-view';
 import FilmPresenter from './film-presenter';
+import ModalPresenter from './modal-presenter';
 import {updateItem} from '../util';
 import {SortType} from '../view/list-sort-view';
 
@@ -20,13 +21,17 @@ const MAX_COUNT_FILMS_IN_LIST = 2;
 
 export default class ContentPresenter {
   #movieModel = null;
+  #isModalOpen = false;
   #movies = [];
-  #showMoreButtonComponent = new ButtonShowMoreView();
+  #sourcedFilms = [];
   #currentSortType = SortType.DEFAULT;
-  #sortComponent = new SortView(this.#currentSortType);
   #renderedFilmCount = FILM_COUNT_PER_STEP;
+
+  #showMoreButtonComponent = new ButtonShowMoreView();
+  #sortComponent = new SortView(this.#currentSortType);
+  #modalPresenter = null;
+
   #filmPresenter = new Map();
-  #sourcedBoardTasks = [];
 
   constructor(movieModel) {
     this.#movieModel = movieModel;
@@ -34,9 +39,26 @@ export default class ContentPresenter {
 
   init = () => {
     this.#movies = [...this.#movieModel.movies];
-    this.#sourcedBoardTasks = [...this.#movieModel.movies];
+    this.#sourcedFilms = [...this.#movieModel.movies];
     this.#renderSort();
     this.#renderBoard();
+  };
+
+  #closeModal = () => {
+    this.#isModalOpen = false;
+    const root = document.querySelector('.film-details');
+    document.body.removeChild(root);
+    document.body.classList.remove('hide-overflow');
+  };
+
+  #openModal = (movie) => {
+    this.#isModalOpen = true;
+    this.#modalPresenter = new ModalPresenter({
+      closeModal: this.#closeModal,
+      onChange: this.#handleFilmChange
+    });
+    this.#modalPresenter.init(movie);
+    document.body.classList.add('hide-overflow');
   };
 
   #handleShowMoreButtonClick = () => {
@@ -58,8 +80,11 @@ export default class ContentPresenter {
 
   #handleFilmChange = (updatedFilm) => {
     this.#movies = updateItem(this.#movies, updatedFilm);
-    this.#sourcedBoardTasks = updateItem(this.#sourcedBoardTasks, updatedFilm);
+    this.#sourcedFilms = updateItem(this.#sourcedFilms, updatedFilm);
     this.#filmPresenter.get(updatedFilm.id).init(updatedFilm);
+    if (this.#isModalOpen) {
+      this.#modalPresenter.init(updatedFilm);
+    }
   };
 
   #sortFilms = (sortType) => {
@@ -71,7 +96,7 @@ export default class ContentPresenter {
         this.#movies.sort((a, b) => a.filmInfo.totalRating - b.filmInfo.totalRating);
         break;
       default:
-        this.#movies = [...this.#sourcedBoardTasks];
+        this.#movies = [...this.#sourcedFilms];
     }
 
     this.#currentSortType = sortType;
@@ -94,7 +119,12 @@ export default class ContentPresenter {
   };
 
   #renderMovie = (movie) => {
-    const filmPresenter = new FilmPresenter(getFilmCard(), this.#handleFilmChange, this.#handleModeChange);
+    const filmPresenter = new FilmPresenter({
+      rootNode: getFilmCard(),
+      onChange: this.#handleFilmChange,
+      openModal: this.#openModal,
+      closeModal: this.#closeModal
+    });
     filmPresenter.init(movie);
     this.#filmPresenter.set(movie.id, filmPresenter);
   };
