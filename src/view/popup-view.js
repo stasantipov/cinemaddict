@@ -247,14 +247,9 @@ export default class PopupView extends AbstractStatefulView  {
     this._setState({...this._state, typedComment});
   };
 
-  // setCommentInputHandler = () => this.element.querySelector('textarea.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
-  // setEmotionClickHandler = () => this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emotionClickHandler);
-
   #setInnerHandlers = () => {
     this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emotionClickHandler);
     this.element.querySelector('textarea.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
-    // this.setEmotionClickHandler();
-    // this.setCommentInputHandler();
   };
 
   setSendCommentkHandler = (callback) => {
@@ -300,8 +295,6 @@ export default class PopupView extends AbstractStatefulView  {
   };
 
   #emotionClickHandler = (evt) => {
-    // const chooseEmotion = evt.target.value;
-    // this._setState({...this._state, chooseEmotion});
     if(evt.target.matches('input[type=radio]')){
       const chooseEmotion = evt.target.value;
       this.#getElementUpdated({ ...this._state, chooseEmotion});
