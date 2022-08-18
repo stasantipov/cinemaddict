@@ -1,9 +1,6 @@
-import {render, replace} from '../framework/render';
+import {render, replace, remove} from '../framework/render';
+import {UserAction, UpdateType} from '../const.js';
 import MovieCardView from '../view/film-card-view';
-
-// import {humanizeFilmDueDate} from '../util.js';
-// import {nanoid} from 'nanoid';
-// import { dateComment} from '../mock/data';
 
 export default class FilmPresenter {
   #filmListContainer = null;
@@ -43,18 +40,56 @@ export default class FilmPresenter {
     }
   };
 
+  destroy = () => remove(this.#movieComponent);
+
   #handleWatchListClick = () => {
-    this.#movie.filmInfo.userDetails.watchlist = !this.#movie.filmInfo.userDetails.watchlist;
-    this.#changeData(this.#movie);
+    this.#changeData({
+      actionType: UserAction.UPDATE_CARD,
+      event: UpdateType.PATCH,
+      payload: {
+        ...this.#movie,
+        filmInfo: {
+          ...this.#movie.filmInfo,
+          userDetails: {
+            ...this.#movie.userDetails,
+            watchlist: !this.#movie.filmInfo.userDetails.watchlist
+          }
+        },
+      }
+    });
   };
 
   #handleWatchedClick = () => {
-    this.#movie.filmInfo.userDetails.alreadyWatched = !this.#movie.filmInfo.userDetails.alreadyWatched;
-    this.#changeData(this.#movie);
+    this.#changeData({
+      actionType: UserAction.UPDATE_CARD,
+      event: UpdateType.PATCH,
+      payload: {
+        ...this.#movie,
+        filmInfo: {
+          ...this.#movie.filmInfo,
+          userDetails: {
+            ...this.#movie.userDetails,
+            alreadyWatched: !this.#movie.filmInfo.userDetails.alreadyWatched
+          }
+        },
+      }
+    });
   };
 
   #handleFavoriteClick = () => {
-    this.#movie.filmInfo.userDetails.favorite = !this.#movie.filmInfo.userDetails.favorite;
-    this.#changeData(this.#movie);
+    this.#changeData({
+      actionType: UserAction.UPDATE_CARD,
+      event: UpdateType.PATCH,
+      payload: {
+        ...this.#movie,
+        filmInfo: {
+          ...this.#movie.filmInfo,
+          userDetails: {
+            ...this.#movie.userDetails,
+            favorite: !this.#movie.filmInfo.userDetails.favorite
+          }
+        },
+      }
+    });
   };
 }

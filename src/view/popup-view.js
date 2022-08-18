@@ -59,7 +59,7 @@ const renderComments = (list) => {
 
 
 const createNewFilmDetailsTemplate = (movie) => {
-  const {title, alternativeTitle, genre, director, description, totalRating, poster, runtime, age, writers, actors} = movie.filmInfo;
+  const {title, alternativeTitle, genre, director, description, totalRating, poster, runtime, ageRating, writers, actors} = movie.filmInfo;
   const {releaseCountry, date} = movie.filmInfo.release;
   const {watchlist, alreadyWatched, favorite} = movie.filmInfo.userDetails;
 
@@ -87,7 +87,7 @@ const createNewFilmDetailsTemplate = (movie) => {
             <div class="film-details__poster">
               <img class="film-details__poster-img" src="./images/posters/${poster}" alt="">
 
-              <p class="film-details__age">${age}</p>
+              <p class="film-details__age">${ageRating}</p>
             </div>
 
             <div class="film-details__info">
@@ -195,11 +195,13 @@ export default class PopupView extends AbstractStatefulView  {
   #onClose = () => null;
   #onEscKeyDown = () => null;
   #onSubmit = () => null;
+  #CommentsModel = null;
 
-  constructor({movie = FILM_CARD, onSubmit}) {
+  constructor({movie = FILM_CARD, onSubmit, handleModelEvent, commmentsModel}) {
     super();
     this.#onSubmit = onSubmit;
-    this._state = PopupView.convertDataToState(movie);
+    this._state = PopupView.convertDataToState(movie, handleModelEvent);
+    commmentsModel.addObserver(handleModelEvent);
     this.#setInnerHandlers();
   }
 
@@ -264,9 +266,26 @@ export default class PopupView extends AbstractStatefulView  {
 
   _restoreHandlers = () => {
     this.#setInnerHandlers();
+    this.setDeleteClickHandler(this._callback.deleteClick);
   };
 
-  static convertDataToState = (movie) => ({...movie, chooseEmotion:'', typedComment:''});
+  setDeleteClickHandler = (callback) => {
+    this._callback.deleteClick = callback;
+    const elements = this.element.querySelectorAll('.film-details__comment-delete');
+    elements.forEach((elem, index) => {elem.addEventListener('click', () => this._callback.deleteClick(index));});
+  };
+
+  #commentDeleteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.deleteClick(PopupView.convertStateToData(this._state));
+  };
+
+  static convertDataToState = (movie, handleModelEvent) => ({
+    ...movie,
+    handleModelEvent,
+    chooseEmotion:'',
+    typedComment:''
+  });
 
   static convertStateToData = (state) => {
     const movie = {...state};
@@ -300,5 +319,35 @@ export default class PopupView extends AbstractStatefulView  {
       this.#getElementUpdated({ ...this._state, chooseEmotion});
       evt.stopPropagation();
     }
+  };
+
+  setWatchlistClickHandler = (callback) => {
+    this._callback.watchlistClick = callback;
+    this.element.querySelector('.film-details__control-button--watchlist').addEventListener('click', this.#watchlistClickHandler);
+  };
+
+  setWatchedClickHandler = (callback) => {
+    this._callback.watchedClick = callback;
+    this.element.querySelector('.film-details__control-button--watched').addEventListener('click', this.#watchedClickHandler);
+  };
+
+  setFavoriteClickHandler = (callback) => {
+    this._callback.favoriteClick = callback;
+    this.element.querySelector('.film-details__control-button--favorite').addEventListener('click', this.#favoriteClickHandler);
+  };
+
+  #watchlistClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.watchlistClick();
+  };
+
+  #watchedClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.watchedClick();
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.favoriteClick();
   };
 }

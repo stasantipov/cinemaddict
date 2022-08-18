@@ -58,18 +58,6 @@ export const humanizeFilmDueDate = (dueDate) => dayjs(dueDate).format('D MMMM YY
 
 export const humanizeCommentDueDate = (dueDate) => dayjs(dueDate).format('YYYY/M/D h:mm');
 
-export const updateItem = (items, update) => {
-  const index = items.findIndex((item) => item.id === update.id);
-
-  if (index === -1) {
-    return items;
-  }
-
-  return [
-    ...items.slice(0, index),
-    update,
-    ...items.slice(index + 1),
-  ];
-};
-
 export const randomBoolean = () => Math.random() >= 0.5;
+
+export const sortFilmsByDateDown = (filmA, filmB) => filmB.filmInfo.release.date - filmA.filmInfo.release.date;

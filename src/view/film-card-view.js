@@ -16,8 +16,7 @@ const FILM_CARD = {
 };
 
 const createFilmCard = (movie) => {
-  // console.log(movie.id, movie.filmInfo.userDetails.favorite);
-  const {title, genre, description, ageRating, totalRating, poster, runtime} = movie.filmInfo;
+  const {title, genre, description, release, totalRating, poster, runtime} = movie.filmInfo;
   const {watchlist, alreadyWatched, favorite} = movie.filmInfo.userDetails;
 
   const watchlistClassName = watchlist
@@ -38,7 +37,7 @@ const createFilmCard = (movie) => {
         <h3 class="film-card__title">${title}</h3>
         <p class="film-card__rating">${totalRating}</p>
         <p class="film-card__info">
-          <span class="film-card__year">${ageRating}</span>
+          <span class="film-card__year">${release.date.getFullYear()}</span>
           <span class="film-card__duration">${runtime}</span>
           <span class="film-card__genre">${genre}</span>
         </p>

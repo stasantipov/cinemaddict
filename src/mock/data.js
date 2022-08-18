@@ -16,6 +16,6 @@ const description = [
 const poster = ['made-for-each-other.png', 'popeye-meets-sinbad.png', 'sagebrush-trail.jpg', 'the-dance-of-life.jpg'];
 const runtime = 78;
 const ageRating = ['0', '12+', '18+'];
+const date = ['2019-05-16T00:00:00.000Z', '2020-05-26T00:00:00.000Z', '2022-06-17T00:00:00.000Z', '2021-06-17T00:00:00.000Z'];
 
-
-export {EMOTIONS, dateComment, title, alternativeTitle, director, writers, actors, releaseCountry, genre, description, poster, runtime, ageRating};
+export {EMOTIONS, dateComment, title, date, alternativeTitle, director, writers, actors, releaseCountry, genre, description, poster, runtime, ageRating};
