@@ -1,6 +1,6 @@
 import {render, replace} from '../framework/render';
 import PopupView from '../view/popup-view';
-import {humanizeFilmDueDate} from '../util.js';
+import {humanizeFilmDueDate} from '../utils.js';
 import {nanoid} from 'nanoid';
 import { UpdateType, UserAction } from '../const.js';
 
@@ -23,15 +23,21 @@ export default class ModalPresenter {
     this.#commentsModel.addObserver(this.#handleModelEvent);
   }
 
-  init = (movie) => {
-    this.#movie = movie;
+  init = ({movie, comments}) => {
+    if(!(typeof movie === 'object' && movie !== null && Array.isArray(comments))) {
+      throw new Error('');
+    }
+    this.#movie = {
+      ...movie,
+      comments: comments
+    };
 
     const prevPopupComponent = this.#popupComponent;
 
     this.#popupComponent = new PopupView({
-      commmentsModel: this.#commentsModel,
+      commentsModel: this.#commentsModel,
       handleModelEvent: this.#handleModelEvent,
-      movie,
+      movie: this.#movie,
       onSubmit: ({chooseEmotion, typedComment}) => {
         if(typeof chooseEmotion === 'string' && chooseEmotion !== '' && typeof typedComment === 'string' && typedComment !== '') {
           this.#changeData(

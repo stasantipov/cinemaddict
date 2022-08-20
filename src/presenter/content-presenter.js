@@ -8,12 +8,13 @@ import TopFilmsView from '../view/top-films-list-view';
 import MostCommentedFilmsView from '../view/most-commented-films-view';
 import NoFilmView from '../view/no-film-view';
 import StatisticsView from '../view/statistics-view';
+import LoadingView from '../view/loading-view.js';
 import FilmPresenter from './film-presenter';
 import ModalPresenter from './modal-presenter';
 import {SortType} from '../view/list-sort-view';
 import {UpdateType, UserAction, filter, FilterType} from '../const';
 import CommentsModel from '../model/comments-model';
-import {sortFilmsByDateDown} from '../util';
+import {sortFilmsByDateDown} from '../utils';
 
 const siteHeaderNode = document.querySelector('.header');
 const siteMainNode = document.querySelector('.main');
@@ -37,14 +38,18 @@ export default class ContentPresenter {
   #sortComponent = new SortView(this.#currentSortType);
   #topFilmsComponent = new TopFilmsView();
   #mostCommentedFilmsComponent = new MostCommentedFilmsView();
+  #loadingComponent = new LoadingView();
   #commentsModel = null;
   #modalPresenter = null;
+  #isLoading = true;
+  #moviesApiService = null;
 
   #filmPresenter = new Map();
 
-  constructor(movieModel, filterModel) {
+  constructor(movieModel, filterModel, moviesApiService) {
     this.#movieModel = movieModel;
     this.#filterModel = filterModel;
+    this.#moviesApiService = moviesApiService;
 
     this.#movieModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -81,15 +86,16 @@ export default class ContentPresenter {
 
   #openModal = (movie) => {
     this.#isModalOpen = true;
-    this.#commentsModel = new CommentsModel(movie);
+    this.#commentsModel = new CommentsModel(this.#moviesApiService);
     this.#modalPresenter = new ModalPresenter({
       closeModal: this.#closeModal,
       onChange: this.#handleViewAction,
       handleModelEvent: this.#handleModelEvent,
       commentsModel: this.#commentsModel
     });
-    this.#modalPresenter.init(movie);
+    this.#modalPresenter.init({movie, comments: []});
     document.body.classList.add('hide-overflow');
+    this.#commentsModel.init(movie);
   };
 
   #renderMovie = (movie) => {
@@ -162,6 +168,17 @@ export default class ContentPresenter {
         this.#clearBoard();
         this.#renderBoard({renderedFilmCount: true, resetSortType: true});
         break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT_COMMENTS:
+        this.#modalPresenter.init({
+          movie: payload,
+          comments: this.#commentsModel.comments
+        });
+        break;
     }
   };
 
@@ -187,7 +204,16 @@ export default class ContentPresenter {
     movies.forEach((movie) => this.#renderMovie(movie));
   };
 
+  #renderLoading = () => {
+    render(this.#loadingComponent, siteMainNode);
+  };
+
   #renderBoard = () => {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     this.#renderUserTitle();
     this.#renderMovieList();
     this.#renderTopFilms();
@@ -209,21 +235,19 @@ export default class ContentPresenter {
   };
 
   #renderMovieList =() => {
-    const movies = this.movies;
-    const moviesCount = movies.length;
 
-    render(new MovieListView(movies), siteMainNode);
+    render(new MovieListView(this.movies), siteMainNode);
 
-    if(moviesCount === 0) {
+    if(this.movies.length === 0) {
       this.#renderNoFilms();
     } else {
 
-      for (let i = 0; i < Math.min(moviesCount, FILM_COUNT_PER_STEP); i++) {
-        this.#renderMovie(movies[i]);
+      for (let i = 0; i < Math.min(this.movies.length, FILM_COUNT_PER_STEP); i++) {
+        this.#renderMovie(this.movies[i]);
       }
 
       // Добавит кнопку в конце списка фильмов
-      if(moviesCount > FILM_COUNT_PER_STEP) {
+      if(this.movies.length > FILM_COUNT_PER_STEP) {
         render(this.#showMoreButtonComponent, getFilmList());
 
         this.#showMoreButtonComponent.setClickHandler(this.#handleShowMoreButtonClick);
@@ -261,6 +285,7 @@ export default class ContentPresenter {
     this.#filmPresenter.clear();
 
     remove(this.#userNameComponent);
+    remove(this.#loadingComponent);
     remove(this.#topFilmsComponent);
     remove(this.#mostCommentedFilmsComponent);
     remove(this.#showMoreButtonComponent);

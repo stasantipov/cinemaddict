@@ -1,5 +1,5 @@
 import {EMOTIONS, dateComment} from './data.js';
-import {getRandomItem, humanizeFilmDueDate} from '../util.js';
+import {getRandomItem, humanizeFilmDueDate} from '../utils.js';
 import {nanoid} from 'nanoid';
 
 // Создание объекта с комментарием

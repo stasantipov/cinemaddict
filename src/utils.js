@@ -61,3 +61,30 @@ export const humanizeCommentDueDate = (dueDate) => dayjs(dueDate).format('YYYY/M
 export const randomBoolean = () => Math.random() >= 0.5;
 
 export const sortFilmsByDateDown = (filmA, filmB) => filmB.filmInfo.release.date - filmA.filmInfo.release.date;
+
+export const convertStringToCamelCase = (str) => str
+  .replace(
+    /([-_][a-z])/ig, ($1) => $1
+      .toUpperCase()
+      .replace('-', '')
+      .replace('_', '')
+  );
+
+export const checkIfIsObject = (obj) => obj === Object(obj) && !Array.isArray(obj) && typeof obj !== 'function';
+
+export const convertSnakeCaseKeysToCamelCase = (obj) => {
+  if (checkIfIsObject(obj)) {
+    const n = {};
+
+    Object.keys(obj)
+      .forEach((k) => {
+        n[convertStringToCamelCase(k)] = convertSnakeCaseKeysToCamelCase(obj[k]);
+      });
+
+    return n;
+  } else if (Array.isArray(obj)) {
+    return obj.map((i) => convertSnakeCaseKeysToCamelCase(i));
+  }
+
+  return obj;
+};

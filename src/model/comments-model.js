@@ -1,21 +1,34 @@
 import Observable from '../framework/observable.js';
-
 import {createMockComment} from '../mock/create-mock-comment.js';
-const MAX_COMMENTS_TOTAL = 100;
+import { UpdateType } from '../const.js';
 
+const MAX_COMMENTS_TOTAL = 100;
 const ALL_COMMENTS = Array.from({length: MAX_COMMENTS_TOTAL}, createMockComment);
 
 export default class CommentsModel extends Observable {
   #film = null;
+  #moviesApiService= null;
+  #comments = [];
 
-  constructor(film) {
+  constructor(film, moviesApiService) {
     super();
-    this.#film = film;
+    this.#moviesApiService = moviesApiService;
   }
 
   get comments() {
-    return this.#film.comments.map((id) => ALL_COMMENTS.find((element) => element.id === id));
+    return this.#comments;
+
   }
+
+  init = async (film) => {
+    this.#film = film;
+    try {
+      this.#comments = await this.#moviesApiService.getComments(film);
+    } catch (err) {
+      this.#comments = [];
+    }
+    this._notify(UpdateType.INIT_COMMENTS, this.#film);
+  };
 
   addComment = (event, payload) => {
     this.#film.comments = [

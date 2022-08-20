@@ -51,7 +51,7 @@ export default class FilmPresenter {
         filmInfo: {
           ...this.#movie.filmInfo,
           userDetails: {
-            ...this.#movie.userDetails,
+            ...this.#movie.filmInfo.userDetails,
             watchlist: !this.#movie.filmInfo.userDetails.watchlist
           }
         },
@@ -68,7 +68,7 @@ export default class FilmPresenter {
         filmInfo: {
           ...this.#movie.filmInfo,
           userDetails: {
-            ...this.#movie.userDetails,
+            ...this.#movie.filmInfo.userDetails,
             alreadyWatched: !this.#movie.filmInfo.userDetails.alreadyWatched
           }
         },
@@ -85,7 +85,7 @@ export default class FilmPresenter {
         filmInfo: {
           ...this.#movie.filmInfo,
           userDetails: {
-            ...this.#movie.userDetails,
+            ...this.#movie.filmInfo.userDetails,
             favorite: !this.#movie.filmInfo.userDetails.favorite
           }
         },

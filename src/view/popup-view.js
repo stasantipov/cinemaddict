@@ -1,5 +1,5 @@
 import AbstractStatefulView  from '../framework/view/abstract-stateful-view.js';
-import {humanizeFilmDueDate} from '../util.js';
+import {humanizeFilmDueDate} from '../utils.js';
 
 const FILM_CARD = {
   filmInfo: {
@@ -33,7 +33,7 @@ const getCheckedAttribute = (chooseEmotion, checkedEmotion) => chooseEmotion ===
 const showNewCommentEmoji = (newCommentEmoji) => newCommentEmoji ? `<img src="images/emoji/${newCommentEmoji}.png" width="70" height="70" alt="emoji-${newCommentEmoji}"></img>` : '';
 
 
-const createNewCommentTemplate = ({commenter, comment, dateComment, emotion}) => (
+const createNewCommentTemplate = ({author, comment, date, emotion}) => (
   `<li class="film-details__comment">
     <span class="film-details__comment-emoji">
       <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
@@ -41,8 +41,8 @@ const createNewCommentTemplate = ({commenter, comment, dateComment, emotion}) =>
     <div>
       <p class="film-details__comment-text">${comment}</p>
       <p class="film-details__comment-info">
-        <span class="film-details__comment-author">${commenter}</span>
-        <span class="film-details__comment-day">${dateComment}</span>
+        <span class="film-details__comment-author">${author}</span>
+        <span class="film-details__comment-day">${humanizeFilmDueDate(date)}</span>
         <button class="film-details__comment-delete">Delete</button>
       </p>
     </div>
@@ -85,7 +85,7 @@ const createNewFilmDetailsTemplate = (movie) => {
           </div>
           <div class="film-details__info-wrap">
             <div class="film-details__poster">
-              <img class="film-details__poster-img" src="./images/posters/${poster}" alt="">
+              <img class="film-details__poster-img" src="./${poster}" alt="">
 
               <p class="film-details__age">${ageRating}</p>
             </div>
@@ -195,13 +195,12 @@ export default class PopupView extends AbstractStatefulView  {
   #onClose = () => null;
   #onEscKeyDown = () => null;
   #onSubmit = () => null;
-  #CommentsModel = null;
 
-  constructor({movie = FILM_CARD, onSubmit, handleModelEvent, commmentsModel}) {
+  constructor({movie = FILM_CARD, onSubmit, handleModelEvent, commentsModel}) {
     super();
     this.#onSubmit = onSubmit;
     this._state = PopupView.convertDataToState(movie, handleModelEvent);
-    commmentsModel.addObserver(handleModelEvent);
+    commentsModel.addObserver(handleModelEvent);
     this.#setInnerHandlers();
   }
 
