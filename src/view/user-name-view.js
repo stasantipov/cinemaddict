@@ -4,8 +4,7 @@ import {UserTitle} from '../const.js';
 const createNewUserNameTemplate = (watchedMovieCount) => {
   let userTitle = UserTitle.NOVICE;
 
-  userTitle = UserTitle.NOVICE;
-  if (watchedMovieCount > 10 && watchedMovieCount <= 20) {
+  if (watchedMovieCount > 10) {
     userTitle = UserTitle.FAN;
     if (watchedMovieCount > 20) {
       userTitle = UserTitle.BUFF;

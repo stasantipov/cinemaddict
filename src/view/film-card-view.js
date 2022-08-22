@@ -1,7 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-// Создание одной карточки фильма
-
 const FILM_CARD = {
   filmInfo: {
     title: '',
@@ -68,7 +66,7 @@ export default class MovieCardView extends AbstractView {
 
   setFilmClickHandler = (callback) => {
     this._callback.click = callback;
-    this.element.querySelector('.film-card__poster').addEventListener('click', this.#clickHandler);
+    this.element.querySelector('.film-card__link').addEventListener('click', this.#clickHandler);
   };
 
   setWatchlistClickHandler = (callback) => {

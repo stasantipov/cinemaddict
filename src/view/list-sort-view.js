@@ -1,10 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-
-export const SortType = {
-  DEFAULT: 'default',
-  SORT_BY_DATE: 'date-down',
-  SORT_BY_RATING: 'rating',
-};
+import {SortType} from '../const.js';
 
 const createNewFilterTemplate = (currentSortType) => {
   const activeClass = 'sort__button--active';

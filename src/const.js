@@ -33,4 +33,10 @@ const UserTitle = {
   BUFF: 'Movie Buff'
 };
 
-export {UserAction, UpdateType, filter, FilterType, UserTitle};
+const SortType = {
+  DEFAULT: 'default',
+  SORT_BY_DATE: 'date-down',
+  SORT_BY_RATING: 'rating',
+};
+
+export {UserAction, UpdateType, filter, FilterType, UserTitle, SortType};

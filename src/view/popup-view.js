@@ -1,5 +1,5 @@
 import AbstractStatefulView  from '../framework/view/abstract-stateful-view.js';
-import {humanizeFilmDueDate} from '../utils.js';
+import {humanizeFilmDueDate, getTimeFromMins, humanizeCommentDueDate} from '../utils.js';
 
 const FILM_CARD = {
   filmInfo: {
@@ -42,7 +42,7 @@ const createNewCommentTemplate = ({author, comment, date, emotion}) => (
       <p class="film-details__comment-text">${comment}</p>
       <p class="film-details__comment-info">
         <span class="film-details__comment-author">${author}</span>
-        <span class="film-details__comment-day">${humanizeFilmDueDate(date)}</span>
+        <span class="film-details__comment-day">${humanizeCommentDueDate(date)}</span>
         <button class="film-details__comment-delete">Delete</button>
       </p>
     </div>
@@ -121,14 +121,14 @@ const createNewFilmDetailsTemplate = (movie) => {
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Runtime</td>
-                  <td class="film-details__cell">${runtime}</td>
+                  <td class="film-details__cell">${getTimeFromMins(runtime)}</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Country</td>
                   <td class="film-details__cell">${releaseCountry}</td>
                 </tr>
                 <tr class="film-details__row">
-                  <td class="film-details__term">Genres</td>
+                  <td class="film-details__term">${genre.length > 1 ? 'Genres' : 'Genre'}</td>
                   <td class="film-details__cell">
                     <span class="film-details__genre">${genre}</span></td>
                 </tr>
@@ -192,7 +192,6 @@ const createNewFilmDetailsTemplate = (movie) => {
 
 export default class PopupView extends AbstractStatefulView  {
   #movie = null;
-  #onClose = () => null;
   #onEscKeyDown = () => null;
   #onSubmit = () => null;
 
@@ -272,11 +271,6 @@ export default class PopupView extends AbstractStatefulView  {
     this._callback.deleteClick = callback;
     const elements = this.element.querySelectorAll('.film-details__comment-delete');
     elements.forEach((elem, index) => {elem.addEventListener('click', () => this._callback.deleteClick(index));});
-  };
-
-  #commentDeleteClickHandler = (evt) => {
-    evt.preventDefault();
-    this._callback.deleteClick(PopupView.convertStateToData(this._state));
   };
 
   static convertDataToState = (movie, handleModelEvent) => ({

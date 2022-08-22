@@ -6,9 +6,7 @@ export default class FilmPresenter {
   #filmListContainer = null;
   #changeData = null;
   #openModal = null;
-
   #movieComponent = null;
-
   #movie = null;
 
   constructor({rootNode, onChange, openModal}) {

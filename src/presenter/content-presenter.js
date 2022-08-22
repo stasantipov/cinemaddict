@@ -11,10 +11,12 @@ import StatisticsView from '../view/statistics-view';
 import LoadingView from '../view/loading-view.js';
 import FilmPresenter from './film-presenter';
 import ModalPresenter from './modal-presenter';
-import {SortType} from '../view/list-sort-view';
-import {UpdateType, UserAction, filter, FilterType} from '../const';
+import {UpdateType, UserAction, filter, FilterType, SortType} from '../const';
 import CommentsModel from '../model/comments-model';
 import {sortFilmsByDateDown} from '../utils';
+
+const FILM_COUNT_PER_STEP = 5;
+const MAX_COUNT_FILMS_IN_LIST = 2;
 
 const siteHeaderNode = document.querySelector('.header');
 const siteMainNode = document.querySelector('.main');
@@ -22,9 +24,6 @@ const getFilmSection = () => siteMainNode.querySelector('.films');
 const getFilmList = () => getFilmSection().querySelector('.films-list');
 const getFilmCard = () => getFilmList().querySelector('.films-list__container');
 const siteFooterNode = document.querySelector('.footer__statistics');
-
-const FILM_COUNT_PER_STEP = 5;
-const MAX_COUNT_FILMS_IN_LIST = 2;
 
 export default class ContentPresenter {
   #movieModel = null;
@@ -110,15 +109,13 @@ export default class ContentPresenter {
   };
 
   #handleShowMoreButtonClick = () => {
-    const Allmovies = [...this.#movieModel.movies];
-    const movieCount = Allmovies.length;
-    const newRenderedMoviesCount =  Math.min(movieCount, this.#renderedFilmCount + FILM_COUNT_PER_STEP);
-    const movies = Allmovies.slice(this.#renderedFilmCount, newRenderedMoviesCount);
+    const newRenderedMoviesCount =  Math.min(this.movies.length, this.#renderedFilmCount + FILM_COUNT_PER_STEP);
+    const movies = this.movies.slice(this.#renderedFilmCount, newRenderedMoviesCount);
 
     this.#renderMovies(movies);
     this.#renderedFilmCount = newRenderedMoviesCount;
 
-    if (this.#renderedFilmCount >= movieCount) {
+    if (this.#renderedFilmCount >= this.movies.length) {
       this.#showMoreButtonComponent.element.remove();
       this.#showMoreButtonComponent.removeElement();
     }
@@ -135,7 +132,7 @@ export default class ContentPresenter {
         break;
       case UserAction.UPDATE_MODAL:
         this.#movieModel.updateFilm(event, payload);
-        this.#modalPresenter.init(payload);
+        this.#modalPresenter.init({movie: payload, comments: this.#commentsModel.comments});
         break;
       case UserAction.ADD_COMMENT:
         this.#commentsModel.addComment(event, payload);
@@ -154,14 +151,14 @@ export default class ContentPresenter {
       case UpdateType.PATCH:
         this.#filmPresenter.get(payload.id).init(payload);
         if (this.#isModalOpen) {
-          this.#modalPresenter.init(payload);
+          this.#modalPresenter.init({movie: payload, comments: this.#commentsModel.comments});
         }
         break;
       case UpdateType.MINOR:
         this.#clearBoard();
         this.#renderBoard();
         if (this.#isModalOpen) {
-          this.#modalPresenter.init(payload);
+          this.#modalPresenter.init({movie: payload, comments: this.#commentsModel.comments});
         }
         break;
       case UpdateType.MAJOR:
@@ -222,8 +219,7 @@ export default class ContentPresenter {
   };
 
   #renderUserTitle = () => {
-    const movies = this.#movieModel.movies;
-    const watchedMoviesCount = filter[FilterType.HISTORY](movies).length;
+    const watchedMoviesCount = filter[FilterType.HISTORY](this.movies).length;
 
     this.#userNameComponent = new UserNameView(watchedMoviesCount);
 
@@ -278,8 +274,7 @@ export default class ContentPresenter {
   };
 
   #clearBoard = ({renderedFilmCount = false, resetSortType = false} = {}) => {
-    const movies = [...this.#movieModel.movies];
-    const moviesCount = movies.length;
+    const moviesCount = this.movies.length;
 
     this.#filmPresenter.forEach((presenter) => presenter.destroy());
     this.#filmPresenter.clear();

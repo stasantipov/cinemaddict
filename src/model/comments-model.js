@@ -1,16 +1,13 @@
 import Observable from '../framework/observable.js';
-import {createMockComment} from '../mock/create-mock-comment.js';
 import { UpdateType } from '../const.js';
-
-const MAX_COMMENTS_TOTAL = 100;
-const ALL_COMMENTS = Array.from({length: MAX_COMMENTS_TOTAL}, createMockComment);
+import {convertSnakeCaseKeysToCamelCase} from '../utils.js';
 
 export default class CommentsModel extends Observable {
   #film = null;
   #moviesApiService= null;
   #comments = [];
 
-  constructor(film, moviesApiService) {
+  constructor(moviesApiService) {
     super();
     this.#moviesApiService = moviesApiService;
   }
@@ -26,24 +23,42 @@ export default class CommentsModel extends Observable {
       this.#comments = await this.#moviesApiService.getComments(film);
     } catch (err) {
       this.#comments = [];
+      throw new Error(err);
     }
     this._notify(UpdateType.INIT_COMMENTS, this.#film);
   };
 
-  addComment = (event, payload) => {
-    this.#film.comments = [
-      ...this.#film.comments,
-      payload
-    ];
-
-    ALL_COMMENTS.push(payload);
-
-    this._notify(event, this.#film);
+  addComment = async (event, payload) => {
+    try {
+      const response = await this.#moviesApiService.addComment(this.#film, payload);
+      this.#comments = this.#adaptToClient(response);
+      this.#film.comments.push(payload.id);
+      this._notify(event, this.#film);
+    } catch(err) {
+      throw new Error(err);
+    }
   };
 
-  deleteComment = (updateType, commentID) => {
-    this.#film.comments = this.#film.comments.filter(( _ , index) => index !== commentID);
+  deleteComment = async (updateType, commentIndex) => {
+    const commentID = this.#comments[commentIndex].id;
 
-    this._notify(updateType, this.#film);
+    try {
+      await this.#moviesApiService.deleteComment(commentID);
+      this.#comments = this.#comments.filter(( _ , index) => index !== commentIndex);
+
+      this.#film.comments = this.#film.comments.filter(( _ , index) => index !== commentIndex);
+
+      this._notify(updateType, this.#film);
+    } catch(err) {
+      throw new Error(err);
+    }
+  };
+
+  #adaptToClient = (film,) => {
+    const {id, filmInfo, userDetails, comments} = convertSnakeCaseKeysToCamelCase(film.movie);
+    filmInfo.userDetails = userDetails;
+
+    const adaptedComments = convertSnakeCaseKeysToCamelCase(film.comments);
+    return {id, filmInfo, comments}, adaptedComments;
   };
 }
