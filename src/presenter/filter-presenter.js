@@ -9,8 +9,8 @@ export default class FilterPresenter {
 
   #filterComponent = null;
 
-  constructor(filterContainer, filterModel, movieModel) {
-    this.#filterContainer = filterContainer;
+  constructor(filterModel, movieModel) {
+    this.#filterContainer = document.querySelector('.main');
     this.#filterModel = filterModel;
     this.#movieModel = movieModel;
 

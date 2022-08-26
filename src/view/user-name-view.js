@@ -1,14 +1,16 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {UserTitle} from '../const.js';
 
+const NOVICE_MOVIE_COUNT = 10;
+const FAN_MOVIE_COUNT = 20;
+
 const createNewUserNameTemplate = (watchedMovieCount) => {
   let userTitle = UserTitle.NOVICE;
 
-  if (watchedMovieCount > 10) {
+  if (watchedMovieCount > FAN_MOVIE_COUNT) {
+    userTitle = UserTitle.BUFF;
+  } else if (watchedMovieCount > NOVICE_MOVIE_COUNT) {
     userTitle = UserTitle.FAN;
-    if (watchedMovieCount > 20) {
-      userTitle = UserTitle.BUFF;
-    }
   }
 
   return  watchedMovieCount
@@ -18,7 +20,6 @@ const createNewUserNameTemplate = (watchedMovieCount) => {
       </section>`
     : '';
 };
-
 
 export default class UserNameView extends AbstractView {
   #watchedMoviesCount = null;

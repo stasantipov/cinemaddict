@@ -19,6 +19,7 @@ export default class CommentsModel extends Observable {
 
   init = async (film) => {
     this.#film = film;
+
     try {
       this.#comments = await this.#moviesApiService.getComments(film);
     } catch (err) {
@@ -32,21 +33,20 @@ export default class CommentsModel extends Observable {
     try {
       const response = await this.#moviesApiService.addComment(this.#film, payload);
       this.#comments = this.#adaptToClient(response);
-      this.#film.comments.push(payload.id);
+      this.#film.comments = response.movie.comments;
+
       this._notify(event, this.#film);
     } catch(err) {
       throw new Error(err);
     }
   };
 
-  deleteComment = async (updateType, commentIndex) => {
-    const commentID = this.#comments[commentIndex].id;
-
+  deleteComment = async (updateType, commentID) => {
     try {
       await this.#moviesApiService.deleteComment(commentID);
-      this.#comments = this.#comments.filter(( _ , index) => index !== commentIndex);
+      this.#comments = this.#comments.filter((comment) => comment.id !== commentID);
 
-      this.#film.comments = this.#film.comments.filter(( _ , index) => index !== commentIndex);
+      this.#film.comments = this.#film.comments.filter((comment) => comment.id !== commentID);
 
       this._notify(updateType, this.#film);
     } catch(err) {

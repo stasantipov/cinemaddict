@@ -1,6 +1,5 @@
-import {render, replace} from '../framework/render';
+import {render, replace, remove} from '../framework/render';
 import PopupView from '../view/popup-view';
-import {humanizeFilmDueDate} from '../utils.js';
 import { UpdateType, UserAction } from '../const.js';
 
 export default class ModalPresenter {
@@ -13,7 +12,13 @@ export default class ModalPresenter {
   #handleModelEvent = null;
   #comments = null;
 
-  constructor({rootNode = document.body, closeModal, onChange, commentsModel, handleModelEvent} = {}) {
+  constructor({
+    rootNode = document.body,
+    closeModal,
+    onChange,
+    commentsModel,
+    handleModelEvent,
+  } = {}) {
     this.#root = rootNode;
     this.#closeModal = closeModal;
     this.#changeData = onChange;
@@ -41,36 +46,40 @@ export default class ModalPresenter {
     this.#popupComponent = new PopupView({
       commentsModel: this.#commentsModel,
       handleModelEvent: this.#handleModelEvent,
-      movie: this.#movie,
-      onSubmit: ({chooseEmotion, typedComment}) => {
-        if(typeof chooseEmotion === 'string' && chooseEmotion !== '' && typeof typedComment === 'string' && typedComment !== '') {
-          this.#changeData( {
-            actionType: UserAction.ADD_COMMENT,
-            event: UpdateType.MINOR,
-            payload: {
-              id: '',
-              author: 'Ilya OReilly',
-              comment: typedComment,
-              date: humanizeFilmDueDate(new Date ().toISOString()),
-              emotion: chooseEmotion
-            }
-          }
-          );
-        }
-      }});
+      movie: this.#movie
+    });
 
+    this.#popupComponent.setCloseButtonClickHandler(this.#closeModal);
     this.#popupComponent.setWatchlistClickHandler(this.#handleWatchListClick);
     this.#popupComponent.setWatchedClickHandler(this.#handleWatchedClick);
     this.#popupComponent.setFavoriteClickHandler(this.#handleFavoriteClick);
     this.#popupComponent.setDeleteClickHandler(this.#handleDeleteClick);
+    this.#popupComponent.setAddCommentKeyDownHandler(this.#handleSubmit);
 
     if (prevPopupComponent === null) {
       render(this.#popupComponent, this.#root);
     } else {
       replace(this.#popupComponent, prevPopupComponent);
     }
+  };
 
-    this.#popupComponent.addEvents(this.#closeModal);
+  setAborting = () => {
+    this.#popupComponent.shake();
+  };
+
+  destroy = () => remove(this.#popupComponent);
+
+  handleCommentError = () => {
+    this.#popupComponent.reset(this.#movie);
+  };
+
+  #handleSubmit = (payload) => {
+    this.#changeData( {
+      actionType: UserAction.ADD_COMMENT,
+      event: UpdateType.MINOR,
+      payload
+    }
+    );
   };
 
   #handleDeleteClick = (comment) => {

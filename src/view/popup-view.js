@@ -1,5 +1,8 @@
-import AbstractStatefulView  from '../framework/view/abstract-stateful-view.js';
-import {humanizeFilmDueDate, getTimeFromMins, humanizeCommentDueDate} from '../utils.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import { humanizeFilmDueDate, getTimeFromMins, humanizeCommentDueDate } from '../utils.js';
+import { KeyCode } from '../const.js';
+
+const SHAKE_ANIMATION_TIMEOUT = 600;
 
 const FILM_CARD = {
   filmInfo: {
@@ -32,8 +35,7 @@ const getCheckedAttribute = (chooseEmotion, checkedEmotion) => chooseEmotion ===
 
 const showNewCommentEmoji = (newCommentEmoji) => newCommentEmoji ? `<img src="images/emoji/${newCommentEmoji}.png" width="70" height="70" alt="emoji-${newCommentEmoji}"></img>` : '';
 
-
-const createNewCommentTemplate = ({author, comment, date, emotion}) => (
+const createNewCommentTemplate = ({ author, comment, date, emotion, id }) => (
   `<li class="film-details__comment">
     <span class="film-details__comment-emoji">
       <img src="./images/emoji/${emotion}.png" width="55" height="55" alt="emoji-smile">
@@ -43,7 +45,7 @@ const createNewCommentTemplate = ({author, comment, date, emotion}) => (
       <p class="film-details__comment-info">
         <span class="film-details__comment-author">${author}</span>
         <span class="film-details__comment-day">${humanizeCommentDueDate(date)}</span>
-        <button class="film-details__comment-delete">Delete</button>
+        <button class="film-details__comment-delete" data-id="${id}">Delete</button>
       </p>
     </div>
   </li>`
@@ -57,11 +59,10 @@ const renderComments = (list) => {
   return commentTepmlate;
 };
 
-
-const createNewFilmDetailsTemplate = (movie) => {
-  const {title, alternativeTitle, genre, director, description, totalRating, poster, runtime, ageRating, writers, actors} = movie.filmInfo;
-  const {releaseCountry, date} = movie.filmInfo.release;
-  const {watchlist, alreadyWatched, favorite} = movie.filmInfo.userDetails;
+const createNewFilmDetailsTemplate = (movie, isDisabled) => {
+  const { title, alternativeTitle, genre, director, description, totalRating, poster, runtime, ageRating, writers, actors } = movie.filmInfo;
+  const { releaseCountry, date } = movie.filmInfo.release;
+  const { watchlist, alreadyWatched, favorite } = movie.filmInfo.userDetails;
 
   const watchlistClassName = watchlist
     ? 'film-details__control-button--watchlist film-details__control-button--active'
@@ -77,7 +78,6 @@ const createNewFilmDetailsTemplate = (movie) => {
 
   return (
     `<section class="film-details">
-      <div class="films-details__shadow"></div>
       <form class="film-details__inner" action="" method="get" name="commentForm" onsubmit="return false;">
         <div class="film-details__top-container">
           <div class="film-details__close">
@@ -87,7 +87,7 @@ const createNewFilmDetailsTemplate = (movie) => {
             <div class="film-details__poster">
               <img class="film-details__poster-img" src="./${poster}" alt="">
 
-              <p class="film-details__age">${ageRating}</p>
+              <p class="film-details__age">${ageRating}+</p>
             </div>
 
             <div class="film-details__info">
@@ -109,11 +109,11 @@ const createNewFilmDetailsTemplate = (movie) => {
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Writers</td>
-                  <td class="film-details__cell">${writers}</td>
+                  <td class="film-details__cell">${writers.join(', ')}</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Actors</td>
-                  <td class="film-details__cell">${actors}</td>
+                  <td class="film-details__cell">${actors.join(', ')}</td>
                 </tr>
                 <tr class="film-details__row">
                   <td class="film-details__term">Release Date</td>
@@ -130,7 +130,7 @@ const createNewFilmDetailsTemplate = (movie) => {
                 <tr class="film-details__row">
                   <td class="film-details__term">${genre.length > 1 ? 'Genres' : 'Genre'}</td>
                   <td class="film-details__cell">
-                    <span class="film-details__genre">${genre}</span></td>
+                    <span class="film-details__genre">${genre.join(', ')}</span></td>
                 </tr>
               </table>
 
@@ -157,7 +157,7 @@ const createNewFilmDetailsTemplate = (movie) => {
               <div class="film-details__add-emoji-label">${showNewCommentEmoji(movie.chooseEmotion)}</div>
 
               <label class="film-details__comment-label">
-                <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment">${movie.typedComment}</textarea>
+                <textarea class="film-details__comment-input" placeholder="Select reaction below and write comment here" name="comment" ${isDisabled ? 'disabled' : ''}>${movie.typedComment}</textarea>
               </label>
 
               <div class="film-details__emoji-list">
@@ -189,15 +189,9 @@ const createNewFilmDetailsTemplate = (movie) => {
   );
 };
 
-
-export default class PopupView extends AbstractStatefulView  {
-  #movie = null;
-  #onEscKeyDown = () => null;
-  #onSubmit = () => null;
-
-  constructor({movie = FILM_CARD, onSubmit, handleModelEvent, commentsModel}) {
+export default class PopupView extends AbstractStatefulView {
+  constructor({ movie = FILM_CARD, handleModelEvent, commentsModel }) {
     super();
-    this.#onSubmit = onSubmit;
     this._state = PopupView.convertDataToState(movie, handleModelEvent);
     commentsModel.addObserver(handleModelEvent);
     this.#setInnerHandlers();
@@ -207,111 +201,51 @@ export default class PopupView extends AbstractStatefulView  {
     return createNewFilmDetailsTemplate(this._state);
   }
 
-  addEvents = (onClose) => {
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+  get scrollOffset() { return this.element.scrollTop; }
+  set scrollOffset(value) { this.element.scrollTop = value; }
 
-    const cleanUp = () => {
-      this.element.querySelector('.film-details__close-btn').removeEventListener('click', cleanUp);
-      this.element.querySelector('.films-details__shadow').removeEventListener('click', cleanUp);
-      document.removeEventListener('keydown', onEscKeyDown);
-      onClose(this.#movie);
-    };
-    this.element.querySelector('.film-details__close-btn').addEventListener('click', cleanUp);
-    this.element.querySelector('.films-details__shadow').addEventListener('click', cleanUp);
-
-    const that = this;
-
-    function onEscKeyDown (evt) {
-      if (evt.key === 'Escape' || evt.key === 'Esc') {
-        evt.preventDefault();
-        cleanUp();
-      } else if (evt.ctrlKey && evt.keyCode === 13) {
-        evt.preventDefault();
-        const {chooseEmotion, typedComment} = that._state;
-        that.#onSubmit({chooseEmotion, typedComment});
-      }
-    }
-
-    this.#onEscKeyDown = onEscKeyDown;
-
-    document.addEventListener('keydown', onEscKeyDown);
+  _restoreHandlers = () => {
+    this.#setInnerHandlers();
+    this.setDeleteClickHandler(this._callback.deleteClick);
+    this.setCloseButtonClickHandler(this._callback.closeClick);
+    this.setAddCommentKeyDownHandler(this._callback.addKeydown);
+    this.setWatchlistClickHandler(this._callback.watchlistClick);
+    this.setWatchedClickHandler(this._callback.watchedClick);
+    this.setFavoriteClickHandler(this._callback.favoriteClick);
   };
-
 
   reset = (movie) => {
     this.updateElement(PopupView.convertDataToState(movie));
   };
 
-  #commentInputHandler = (evt) => {
-    const typedComment = evt.target.value;
-    this._setState({...this._state, typedComment});
-  };
-
-  #setInnerHandlers = () => {
-    this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emotionClickHandler);
-    this.element.querySelector('textarea.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
-  };
-
-  setSendCommentkHandler = (callback) => {
-    this._callback.sendForm = callback;
-    this.element.querySelector('.film-details__inner').addEventListener('keydown', this.#sendComment);
-  };
-
-  #sendComment = (evt) => {
-    evt.preventDefault();
-    this._callback.sendForm();
-  };
-
-  _restoreHandlers = () => {
-    this.#setInnerHandlers();
-    this.setDeleteClickHandler(this._callback.deleteClick);
-  };
+  shake() {
+    this.element.querySelector('.film-details__comment-input').classList.add('shake');
+    setTimeout(() => {
+      this.element.querySelector('.film-details__comment-input').classList.remove('shake');
+    }, SHAKE_ANIMATION_TIMEOUT);
+  }
 
   setDeleteClickHandler = (callback) => {
     this._callback.deleteClick = callback;
     const elements = this.element.querySelectorAll('.film-details__comment-delete');
-    elements.forEach((elem, index) => {elem.addEventListener('click', () => this._callback.deleteClick(index));});
+    elements.forEach((elem) => {
+      elem.addEventListener('click', () => {
+        const { id } = elem.dataset;
+        this._callback.deleteClick(id);
+        elem.textContent = 'Deleting...';
+        elem.disabled = true;
+      });
+    });
   };
 
-  static convertDataToState = (movie, handleModelEvent) => ({
-    ...movie,
-    handleModelEvent,
-    chooseEmotion:'',
-    typedComment:''
-  });
-
-  static convertStateToData = (state) => {
-    const movie = {...state};
-
-    if (movie.chooseEmotion !== '') {
-      movie.chooseEmotion = '';
-    }
-
-    if (movie.typedComment !== '') {
-      movie.typedComment = '';
-    }
-
-    delete movie.chooseEmotion;
-    delete movie.typedComment;
-
-    return movie;
+  setCloseButtonClickHandler = (callback) => {
+    this._callback.closeClick = callback;
+    this.element.querySelector('.film-details__close-btn').addEventListener('click', this.#closePopupClickHandler);
   };
 
-  get scrollOffset() {return this.element.scrollTop;}
-  set scrollOffset(value) {this.element.scrollTop = value;}
-
-  #getElementUpdated = (update) => {
-    const scrollOffset = this.scrollOffset;
-    this.updateElement(update);
-    this.scrollOffset = scrollOffset;
-  };
-
-  #emotionClickHandler = (evt) => {
-    if(evt.target.matches('input[type=radio]')){
-      const chooseEmotion = evt.target.value;
-      this.#getElementUpdated({ ...this._state, chooseEmotion});
-      evt.stopPropagation();
-    }
+  setAddCommentKeyDownHandler = (callback) => {
+    this._callback.addKeydown = callback;
+    this.element.addEventListener('keydown', this.#addCommentKeyDownHandler);
   };
 
   setWatchlistClickHandler = (callback) => {
@@ -329,6 +263,47 @@ export default class PopupView extends AbstractStatefulView  {
     this.element.querySelector('.film-details__control-button--favorite').addEventListener('click', this.#favoriteClickHandler);
   };
 
+  #setInnerHandlers = () => {
+    this.element.querySelector('.film-details__emoji-list').addEventListener('click', this.#emotionClickHandler);
+    this.element.querySelector('textarea.film-details__comment-input').addEventListener('input', this.#commentInputHandler);
+  };
+
+  #getElementUpdated = (update) => {
+    const scrollOffset = this.scrollOffset;
+    this.updateElement(update);
+    this.scrollOffset = scrollOffset;
+  };
+
+  #commentInputHandler = (evt) => {
+    const typedComment = evt.target.value;
+    this._setState({ ...this._state, typedComment });
+  };
+
+  #emotionClickHandler = (evt) => {
+    if (evt.target.matches('input[type=radio]')) {
+      const chooseEmotion = evt.target.value;
+      this.#getElementUpdated({ ...this._state, chooseEmotion });
+      evt.stopPropagation();
+    }
+  };
+
+  #closePopupClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.closeClick();
+  };
+
+  #addCommentKeyDownHandler = (evt) => {
+    if (evt.ctrlKey && evt.keyCode === KeyCode.ENTER) {
+      const { value } = evt.target;
+      if (value !== '') {
+        this._callback.addKeydown({
+          comment: value,
+          emotion: this._state.chooseEmotion
+        });
+      }
+    }
+  };
+
   #watchlistClickHandler = (evt) => {
     evt.preventDefault();
     this._callback.watchlistClick();
@@ -343,4 +318,12 @@ export default class PopupView extends AbstractStatefulView  {
     evt.preventDefault();
     this._callback.favoriteClick();
   };
+
+  static convertDataToState = (movie, handleModelEvent) => ({
+    ...movie,
+    handleModelEvent,
+    chooseEmotion: '',
+    typedComment: '',
+    isDisabled: false
+  });
 }

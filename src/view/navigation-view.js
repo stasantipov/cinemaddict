@@ -6,9 +6,18 @@ const createNavigationTemplate = (filters, currentFilter) => {
   return (
     `<nav class="main-navigation">
       <a href="#all" class="main-navigation__item ${currentFilter === filters[0].type ? activeClass : ''}" data-type="${filters[0].type}">${filters[0].name} movies</a>
-      <a href="#watchlist" class="main-navigation__item ${currentFilter === filters[1].type ? activeClass : ''}" data-type="${filters[1].type}">${filters[1].name} <span class="main-navigation__item-count">${filters[1].count}</span></a>
-      <a href="#history" class="main-navigation__item ${currentFilter === filters[2].type ? activeClass : ''}" data-type="${filters[2].type}">${filters[2].name} <span class="main-navigation__item-count">${filters[2].count}</span></a>
-      <a href="#favorites" class="main-navigation__item ${currentFilter === filters[3].type ? activeClass : ''}" data-type="${filters[3].type}">${filters[3].name} <span class="main-navigation__item-count">${filters[3].count}</span></a>
+
+      <a href="#watchlist" class="main-navigation__item ${currentFilter === filters[1].type ? activeClass : ''}" data-type="${filters[1].type}">${filters[1].name}
+        <span class="main-navigation__item-count">${filters[1].count}</span>
+      </a>
+
+      <a href="#history" class="main-navigation__item ${currentFilter === filters[2].type ? activeClass : ''}" data-type="${filters[2].type}">${filters[2].name}
+        <span class="main-navigation__item-count">${filters[2].count}</span>
+      </a>
+
+      <a href="#favorites" class="main-navigation__item ${currentFilter === filters[3].type ? activeClass : ''}" data-type="${filters[3].type}">${filters[3].name}
+        <span class="main-navigation__item-count">${filters[3].count}</span>
+      </a>
     </nav>`
   );
 };
@@ -29,15 +38,14 @@ export default class NavigationView extends AbstractView {
 
   setFilterTypeChangeHandler = (callback) => {
     this._callback.filterTypeChange = callback;
-    this.element.addEventListener('click', this.#filterTypeChangeHandler);
+    this.element.addEventListener('click', this.#filterTypeClickHandler);
   };
 
-  #filterTypeChangeHandler = (evt) => {
-    if (evt.target.tagName !== 'A') {
-      return;
+  #filterTypeClickHandler = (evt) => {
+    if (evt.target.tagName === 'A' || evt.target.tagName === 'SPAN') {
+      evt.preventDefault();
+      const filterType =  evt.target.tagName === 'SPAN' ? evt.target.parentElement.dataset.type : evt.target.dataset.type;
+      this._callback.filterTypeChange(filterType);
     }
-
-    evt.preventDefault();
-    this._callback.filterTypeChange(evt.target.dataset.type);
   };
 }

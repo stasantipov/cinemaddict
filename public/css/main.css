@@ -434,17 +434,11 @@ button {
   display: grid;
   justify-items: end;
   height: 100vh;
-  inset: 0;
+  width: 1190px;
+  inset: 0 0 0 auto;
   z-index: 1;
   box-shadow: -3px 2px 13px 0 #141628;
   overflow: hidden;
-}
-
-.films-details__shadow {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  cursor: not-allowed;
 }
 
 .film-details__inner {

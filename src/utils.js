@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 
-export function getTimeFromMins(mins) {
+export const getTimeFromMins = (mins) => {
   const hours = Math.trunc(mins/60);
   const minutes = mins % 60;
 
@@ -8,7 +8,7 @@ export function getTimeFromMins(mins) {
     return `${hours}h ${minutes}m`;
   }
   return `${mins}m`;
-}
+};
 
 export const humanizeFilmDueDate = (date) => dayjs(date).format('D MMMM YYYY');
 

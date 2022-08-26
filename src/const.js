@@ -1,16 +1,21 @@
+const KeyCode = {
+  ESC: 27,
+  ENTER: 13
+};
+
 const UserAction = {
-  UPDATE_CARD: 'UPDATE_CARD',
-  UPDATE_MODAL: 'UPDATE_MODAL',
-  ADD_COMMENT: 'ADD_COMMENT',
-  DELETE_COMMENT: 'DELETE_COMMENT'
+  UPDATE_CARD: 'UpdateCard',
+  UPDATE_MODAL: 'UpdateModal',
+  ADD_COMMENT: 'AddComment',
+  DELETE_COMMENT: 'DeleteComment'
 };
 
 const UpdateType = {
-  PATCH: 'PATCH',
-  MINOR: 'MINOR',
-  MAJOR: 'MAJOR',
-  INIT: 'INIT',
-  INIT_COMMENTS: 'INIT_COMMENTS'
+  PATCH: 'Patch',
+  MINOR: 'Minor',
+  MAJOR: 'Major',
+  INIT: 'Init',
+  INIT_COMMENTS: 'InitComments'
 };
 
 const FilterType = {
@@ -21,7 +26,7 @@ const FilterType = {
 };
 
 const filter = {
-  [FilterType.ALL]: (movies) => movies,
+  [FilterType.ALL]: (movies) => Array.from(movies),
   [FilterType.WATCHLIST]: (movies) => movies.filter((el) => el.filmInfo.userDetails.watchlist),
   [FilterType.HISTORY]: (movies) => movies.filter((el) => el.filmInfo.userDetails.alreadyWatched),
   [FilterType.FAVORITES]: (movies) => movies.filter((el) => el.filmInfo.userDetails.favorite)
@@ -39,4 +44,4 @@ const SortType = {
   SORT_BY_RATING: 'rating',
 };
 
-export {UserAction, UpdateType, filter, FilterType, UserTitle, SortType};
+export {KeyCode, UserAction, UpdateType, filter, FilterType, UserTitle, SortType};

@@ -1,4 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
+import {getTimeFromMins} from '../utils.js';
 
 const FILM_CARD = {
   filmInfo: {
@@ -12,6 +13,8 @@ const FILM_CARD = {
     description: ''
   }
 };
+
+const showDescription = (description) => description.length > 139 ? `${description.slice(0, 139)}…` : description;
 
 const createFilmCard = (movie) => {
   const {title, genre, description, release, totalRating, poster, runtime} = movie.filmInfo;
@@ -36,11 +39,11 @@ const createFilmCard = (movie) => {
         <p class="film-card__rating">${totalRating}</p>
         <p class="film-card__info">
           <span class="film-card__year">${new Date(release.date).getFullYear()}</span>
-          <span class="film-card__duration">${runtime}</span>
+          <span class="film-card__duration">${getTimeFromMins(runtime)}</span>
           <span class="film-card__genre">${genre.join(', ')}</span>
         </p>
         <img src="./${poster}" alt="" class="film-card__poster">
-        <p class="film-card__description">${description}</p>
+        <p class="film-card__description">${showDescription(description)}</p>
         <span class="film-card__comments">${movie.comments.length} comments</span>
       </a>
       <div class="film-card__controls">

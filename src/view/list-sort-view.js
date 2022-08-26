@@ -13,7 +13,7 @@ const createNewFilterTemplate = (currentSortType) => {
   );
 };
 
-export default class SortView extends AbstractView {
+export default class ListSortView extends AbstractView {
   #currentSortType = null;
 
   constructor(currentSortType) {
@@ -25,13 +25,13 @@ export default class SortView extends AbstractView {
     return createNewFilterTemplate(this.#currentSortType);
   }
 
-  setSortTypeChangeHandler = (callback) => {
+  setSortTypeClickHandler = (callback) => {
     this._callback.sortTypeChange = callback;
-    this.element.addEventListener('click', this.#sortTypeChangeHandler);
+    this.element.addEventListener('click', this.#sortTypeClickHandler);
   };
 
 
-  #sortTypeChangeHandler = (evt) => {
+  #sortTypeClickHandler = (evt) => {
     if (evt.target.tagName !== 'A') {
       return;
     }
